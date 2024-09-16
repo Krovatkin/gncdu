@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/bastengao/gncdu/debug"
+	"github.com/Krovatkin/tvchooser"
 	"github.com/bastengao/gncdu/scan"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -164,10 +165,15 @@ func (p *ResultPage) Show() {
 					return
 				}
 				debug.Info(fmt.Sprintf("Removing %s", file.Path()))
+				debug.Info(fmt.Sprintf("m2 pressed!"))
 				p.files = append(p.files[:i], p.files[i+1:]...)
 				p.parent.SetChildren(p.files)
 			}
 			navigator.Push(NewDeleteConfirmPage(p.app, file.Info.Name(), confirm))
+		} else if event.Rune() == 'm' {
+			debug.Info(fmt.Sprintf("m pressed!"))
+			path := tvchooser.DirectoryChooser(p.app, true)
+			debug.Info(fmt.Sprintf("Choosing %s", path))
 		}
 		return event
 	})

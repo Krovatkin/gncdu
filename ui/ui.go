@@ -51,7 +51,7 @@ func ShowUI(scanDir func() ([]*scan.FileData, error)) {
 
 func newInfoView() tview.Primitive {
 	return tview.NewTextView().
-		SetText("[ctrl+c] close    [d] delete    [?] help")
+		SetText("[ctrl+c] close    [d] delete    [m] move    [?] help")
 }
 
 func newLayout(title string, content tview.Primitive) tview.Primitive {
