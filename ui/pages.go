@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bastengao/gncdu/debug"
 	"github.com/bastengao/gncdu/scan"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -162,6 +163,7 @@ func (p *ResultPage) Show() {
 					// TODO
 					return
 				}
+				debug.Info(fmt.Sprintf("Removing %s", file.Path()))
 				p.files = append(p.files[:i], p.files[i+1:]...)
 				p.parent.SetChildren(p.files)
 			}
@@ -237,7 +239,7 @@ func NewHelpPage(app *tview.Application) *HelpPage {
 func (p *HelpPage) Show() {
 	text := fmt.Sprintf(`GNCDU %s
 
-	https://github.com/bastengao/gncdu
+	https://github.com/bastengao/gncdu + logging
 	`, Version)
 	modal := tview.NewModal().
 		SetText(text).
