@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bastengao/gncdu/debug"
 	"github.com/Krovatkin/tvchooser"
+	"github.com/bastengao/gncdu/config"
+	"github.com/bastengao/gncdu/debug"
 	"github.com/bastengao/gncdu/scan"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -165,15 +166,50 @@ func (p *ResultPage) Show() {
 					return
 				}
 				debug.Info(fmt.Sprintf("Removing %s", file.Path()))
-				debug.Info(fmt.Sprintf("m2 pressed!"))
 				p.files = append(p.files[:i], p.files[i+1:]...)
 				p.parent.SetChildren(p.files)
 			}
 			navigator.Push(NewDeleteConfirmPage(p.app, file.Info.Name(), confirm))
 		} else if event.Rune() == 'm' {
-			debug.Info(fmt.Sprintf("m pressed!"))
-			path := tvchooser.DirectoryChooser(p.app, true)
-			debug.Info(fmt.Sprintf("Choosing %s", path))
+
+			row, _ := table.GetSelection()
+			if row == 0 {
+				return event
+			}
+			if row == offset-1 {
+				return event
+			}
+			i := row - offset
+			file := p.files[i]
+			confirm := func() {
+				var path string
+				if config.LastMovePath == "" {
+					debug.Info(fmt.Sprintf("LastMovePath isn't set"))
+					path = tvchooser.DirectoryChooser(p.app, true, nil)
+				} else {
+					debug.Info(fmt.Sprintf("LastMovePath is %s", config.LastMovePath))
+					path = tvchooser.DirectoryChooser(p.app, true, &config.LastMovePath)
+				}
+
+				if path != "" {
+					debug.Info(fmt.Sprintf("LastMovePath = %s", path))
+					config.LastMovePath = path
+					err := file.Move(path)
+					if err != nil {
+						debug.Info(fmt.Sprintf("file.Move returned an error: %s", err.Error()))
+						return
+					}
+
+				}
+				debug.Info(fmt.Sprintf("Moving %s to %s", file.Path(), path))
+				p.files = append(p.files[:i], p.files[i+1:]...)
+				p.parent.SetChildren(p.files)
+			}
+			navigator.Push(NewDeleteConfirmPage(p.app, file.Info.Name(), confirm))
+
+			// debug.Info(fmt.Sprintf("m pressed!"))
+			// path := tvchooser.DirectoryChooser(p.app, true)
+			// debug.Info(fmt.Sprintf("Choosing %s", path))
 		}
 		return event
 	})

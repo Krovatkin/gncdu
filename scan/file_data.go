@@ -1,6 +1,7 @@
 package scan
 
 import (
+	cp "github.com/otiai10/copy"
 	"os"
 	"path/filepath"
 )
@@ -94,6 +95,11 @@ func (d *FileData) SetChildren(children []*FileData) {
 
 func (d *FileData) Delete() error {
 	return os.RemoveAll(d.Path())
+}
+
+func (d *FileData) Move(dstDirectoryPath string) error {
+	dstFilePath := filepath.Join(dstDirectoryPath, d.Info.Name())
+	return cp.Copy(d.Path(), dstFilePath)
 }
 
 func hasDir(files []os.FileInfo) bool {

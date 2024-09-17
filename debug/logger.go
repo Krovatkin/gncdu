@@ -2,9 +2,9 @@ package debug
 
 import (
 	"fmt"
+	"github.com/bastengao/gncdu/config"
 	"log"
 	"os"
-	"github.com/bastengao/gncdu/config"
 )
 
 var logger *log.Logger
