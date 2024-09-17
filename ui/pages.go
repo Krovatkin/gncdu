@@ -206,10 +206,6 @@ func (p *ResultPage) Show() {
 				p.parent.SetChildren(p.files)
 			}
 			navigator.Push(NewDeleteConfirmPage(p.app, file.Info.Name(), confirm))
-
-			// debug.Info(fmt.Sprintf("m pressed!"))
-			// path := tvchooser.DirectoryChooser(p.app, true)
-			// debug.Info(fmt.Sprintf("Choosing %s", path))
 		}
 		return event
 	})
