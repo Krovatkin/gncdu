@@ -10,6 +10,8 @@ github.com/Krovatkin/tvchooser v1.1.1-0.20240917033529-8d61f68efba5 h1:xC7gmTaeY
 github.com/Krovatkin/tvchooser v1.1.1-0.20240917033529-8d61f68efba5/go.mod h1:YjQfbVwPK+bZuEhVxirkEREf5Ocen2DcGADm7KPprqM=
 github.com/Krovatkin/tvchooser v1.1.1-0.20240917041103-420cdd0c7ddf h1:2uNhLsKapr/4Taj6YFcGtPn5wJaizfy+pxs2Nekdtdk=
 github.com/Krovatkin/tvchooser v1.1.1-0.20240917041103-420cdd0c7ddf/go.mod h1:YjQfbVwPK+bZuEhVxirkEREf5Ocen2DcGADm7KPprqM=
+github.com/Krovatkin/tvchooser v1.1.1-0.20240918083317-a75b6120f129 h1:GMpgnb7klRhvD232/4xFFOfmrBIUQ4K1cBEGPGh6sP4=
+github.com/Krovatkin/tvchooser v1.1.1-0.20240918083317-a75b6120f129/go.mod h1:YjQfbVwPK+bZuEhVxirkEREf5Ocen2DcGADm7KPprqM=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/gdamore/encoding v1.0.0 h1:+7OoQ1Bc6eTm5niUzBa0Ctsh6JbMW6Ra+YNuAtDBdko=

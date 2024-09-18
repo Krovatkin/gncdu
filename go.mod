@@ -5,7 +5,7 @@ go 1.22.3
 toolchain go1.23.1
 
 require (
-	github.com/Krovatkin/tvchooser v1.1.1-0.20240917041103-420cdd0c7ddf
+	github.com/Krovatkin/tvchooser v1.1.1-0.20240918083317-a75b6120f129
 	github.com/gdamore/tcell/v2 v2.7.1
 	github.com/rivo/tview v0.0.0-20240505185119-ed116790de0f
 )
