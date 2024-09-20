@@ -102,6 +102,14 @@ func (d *FileData) Move(dstDirectoryPath string) error {
 	return cp.Copy(d.Path(), dstFilePath)
 }
 
+func (file *FileData) SubtractSizeFromAncestors() {
+	parent := file.Parent
+	for parent != nil {
+		file.size -= parent.size
+		parent = parent.Parent // Move up in the hierarchy
+	}
+}
+
 func hasDir(files []os.FileInfo) bool {
 	for _, file := range files {
 		if file.IsDir() {

@@ -166,6 +166,7 @@ func (p *ResultPage) Show() {
 					return
 				}
 				debug.Info(fmt.Sprintf("Removing %s", file.Path()))
+				file.SubtractSizeFromAncestors()
 				p.files = append(p.files[:i], p.files[i+1:]...)
 				p.parent.SetChildren(p.files)
 			}
@@ -181,31 +182,29 @@ func (p *ResultPage) Show() {
 			}
 			i := row - offset
 			file := p.files[i]
-			confirm := func() {
-				var path string
-				if config.LastMovePath == "" {
-					debug.Info(fmt.Sprintf("LastMovePath isn't set"))
-					path = tvchooser.DirectoryChooser(p.app, true, nil)
-				} else {
-					debug.Info(fmt.Sprintf("LastMovePath is %s", config.LastMovePath))
-					path = tvchooser.DirectoryChooser(p.app, true, &config.LastMovePath)
-				}
-
-				if path != "" {
-					debug.Info(fmt.Sprintf("LastMovePath = %s", path))
-					config.LastMovePath = path
-					err := file.Move(path)
-					if err != nil {
-						debug.Info(fmt.Sprintf("file.Move returned an error: %s", err.Error()))
-						return
-					}
-
-				}
-				debug.Info(fmt.Sprintf("Moving %s to %s", file.Path(), path))
-				p.files = append(p.files[:i], p.files[i+1:]...)
-				p.parent.SetChildren(p.files)
+			var path string
+			if config.LastMovePath == "" {
+				debug.Info(fmt.Sprintf("LastMovePath isn't set"))
+				path = tvchooser.DirectoryChooser(p.app, true, nil)
+			} else {
+				debug.Info(fmt.Sprintf("LastMovePath is %s", config.LastMovePath))
+				path = tvchooser.DirectoryChooser(p.app, true, &config.LastMovePath)
 			}
-			navigator.Push(NewDeleteConfirmPage(p.app, file.Info.Name(), confirm))
+
+			if path != "" {
+				debug.Info(fmt.Sprintf("LastMovePath = %s", path))
+				config.LastMovePath = path
+				err := file.Move(path)
+				if err != nil {
+					debug.Info(fmt.Sprintf("file.Move returned an error: %s", err.Error()))
+				} else {
+					debug.Info(fmt.Sprintf("Moving %s to %s", file.Path(), path))
+					file.SubtractSizeFromAncestors()
+					p.files = append(p.files[:i], p.files[i+1:]...)
+					p.parent.SetChildren(p.files)
+				}
+
+			}
 		}
 		return event
 	})
@@ -309,9 +308,9 @@ func NewDeleteConfirmPage(app *tview.Application, name string, confirm func()) *
 func (p *DeleteConfirmPage) Show() {
 	modal := tview.NewModal().
 		SetText(fmt.Sprintf("Are you sure want to delete \"%s\" ?", p.name)).
-		AddButtons([]string{"Cacnel", "OK"}).
+		AddButtons([]string{"OK", "Cancel"}).
 		SetDoneFunc(func(i int, l string) {
-			if i == 1 {
+			if i == 0 {
 				p.confirm()
 			}
 			p.navigator.Pop()
