@@ -4,6 +4,7 @@ import (
 	cp "github.com/otiai10/copy"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type FileData struct {
@@ -99,7 +100,14 @@ func (d *FileData) Delete() error {
 
 func (d *FileData) Move(dstDirectoryPath string) error {
 	dstFilePath := filepath.Join(dstDirectoryPath, d.Info.Name())
-	return cp.Copy(d.Path(), dstFilePath)
+
+	err := cp.Copy(d.Path(), dstFilePath)
+	if err != nil {
+		return err
+	}
+
+	d.updateSizesOnMove(dstDirectoryPath)
+	return nil
 }
 
 func (file *FileData) SubtractSizeFromAncestors() {
@@ -117,4 +125,52 @@ func hasDir(files []os.FileInfo) bool {
 		}
 	}
 	return false
+}
+
+func (file *FileData) updateSizesOnMove(dst string) {
+	// Subtracting size from ancestors
+	file.SubtractSizeFromAncestors()
+
+	// Getting the root
+	root := file
+	for root.Parent != nil {
+		root = root.Parent
+	}
+
+	if !strings.HasPrefix(dst, root.Path()) {
+		// If it isn't, then do nothing
+		return
+	}
+
+	// Removing prefix from dst
+	dst = strings.TrimPrefix(dst, root.Path())
+
+	// Removing leading slash, if present
+	dst = strings.TrimPrefix(dst, string(os.PathSeparator))
+
+	// Splitting dst by path separator
+	paths := strings.Split(dst, string(os.PathSeparator))
+
+	// Update root node size first
+	root.size += file.Info.Size()
+
+	// Iterating over elements
+	for _, path := range paths {
+		// Find the child of current iter starting from root
+		var child *FileData
+		for _, child = range root.Children {
+			if child.Info.Name() == path {
+				break
+			}
+		}
+
+		// If child was found then increase the size by file.Size()
+		if child != nil {
+			child.size += file.Info.Size()
+			root = child // Make this node as new root for the next iteration
+		} else {
+			// Break upon no matching child
+			break
+		}
+	}
 }
