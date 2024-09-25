@@ -165,7 +165,7 @@ func (p *ResultPage) Show() {
 					// TODO
 					return
 				}
-				debug.Info(fmt.Sprintf("Removing %s", file.Path()))
+				debug.Info(fmt.Sprintf("Removing \"%s\"", file.Path()))
 				file.SubtractSizeFromAncestors()
 				p.files = append(p.files[:i], p.files[i+1:]...)
 				p.parent.SetChildren(p.files)
@@ -198,7 +198,7 @@ func (p *ResultPage) Show() {
 				if err != nil {
 					debug.Info(fmt.Sprintf("file.Move returned an error: %s", err.Error()))
 				} else {
-					debug.Info(fmt.Sprintf("Moving %s to %s", file.Path(), path))
+					debug.Info(fmt.Sprintf("Moving \"%s\" to \"%s\"", file.Path(), path))
 					file.SubtractSizeFromAncestors()
 					p.files = append(p.files[:i], p.files[i+1:]...)
 					p.parent.SetChildren(p.files)
