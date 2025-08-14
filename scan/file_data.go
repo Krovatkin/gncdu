@@ -1,10 +1,11 @@
 package scan
 
 import (
-	cp "github.com/otiai10/copy"
 	"os"
 	"path/filepath"
 	"strings"
+
+	cp "github.com/otiai10/copy"
 )
 
 type FileData struct {
@@ -96,6 +97,31 @@ func (d *FileData) SetChildren(children []*FileData) {
 
 func (d *FileData) Delete() error {
 	return os.RemoveAll(d.Path())
+}
+
+func (fd *FileData) Json(depth int) string {
+
+	var sb strings.Builder
+
+	padding := strings.Repeat("\t", depth)
+
+	sb.WriteString(padding + "{\n")
+	sb.WriteString(padding + "\t" + `"` + fd.Info.Name() + `"` + "\n")
+
+	if fd.Info.IsDir() && len(fd.Children) > 0 {
+		sb.WriteString(padding + "\t[\n")
+
+		for _, child := range fd.Children {
+			sb.WriteString(child.Json(depth + 2))
+			sb.WriteString("\n")
+		}
+
+		sb.WriteString(padding + "\t]\n")
+	}
+
+	sb.WriteString(padding + "}")
+
+	return sb.String()
 }
 
 func (d *FileData) Move(dstDirectoryPath string) error {

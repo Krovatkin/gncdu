@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"math"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -96,6 +97,47 @@ func (p *ScanningPage) Dispose() {
 	close(p.done)
 }
 
+type FileNamePage struct {
+	BasePage
+	callback func(string) // Callback to handle the filename result
+}
+
+func NewFileNamePage(app *tview.Application, callback func(string)) *FileNamePage {
+	return &FileNamePage{
+		BasePage: BasePage{app: app},
+		callback: callback,
+	}
+}
+
+func (p *FileNamePage) Show() {
+	var filename string
+
+	// Create the form with input field
+	form := tview.NewForm().
+		AddInputField("Filename:", "", 30, nil, func(text string) {
+			filename = text
+		}).
+		AddButton("OK", func() {
+			if p.callback != nil {
+				p.callback(filename)
+			}
+			p.navigator.Pop()
+		}).
+		AddButton("Cancel", func() {
+			p.navigator.Pop()
+		})
+
+	form.SetBorder(true).SetTitle("Enter Filename")
+
+	// Create layout
+	layout := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(form, 0, 1, true).
+		AddItem(newInfoView(), 1, 1, false)
+
+	p.app.SetRoot(layout, true).SetFocus(layout)
+}
+
 type ResultPage struct {
 	BasePage
 	files  []*scan.FileData
@@ -108,6 +150,21 @@ func NewResultPage(app *tview.Application, files []*scan.FileData, parent *scan.
 		files:    files,
 		parent:   parent,
 	}
+}
+
+func saveJsonToFile(jsonData string, filename string) error {
+	// Add .json extension if not present
+	if !strings.HasSuffix(strings.ToLower(filename), ".json") {
+		filename += ".json"
+	}
+
+	// Write JSON to file
+	err := os.WriteFile(filename, []byte(jsonData), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write JSON to file: %w", err)
+	}
+
+	return nil
 }
 
 func (p *ResultPage) Show() {
@@ -174,17 +231,14 @@ func (p *ResultPage) Show() {
 		} else if event.Rune() == 'm' {
 
 			row, _ := table.GetSelection()
-			if row == 0 {
-				return event
-			}
-			if row == offset-1 {
+			if row == 0 || row == offset-1 {
 				return event
 			}
 			i := row - offset
 			file := p.files[i]
 			var path string
 			if config.LastMovePath == "" {
-				debug.Info(fmt.Sprintf("LastMovePath isn't set"))
+				debug.Info("LastMovePath isn't set")
 				path = tvchooser.DirectoryChooser(p.app, true, nil)
 			} else {
 				debug.Info(fmt.Sprintf("LastMovePath is %s", config.LastMovePath))
@@ -205,6 +259,39 @@ func (p *ResultPage) Show() {
 				}
 
 			}
+		} else if event.Rune() == 'o' {
+			debug.Info("o was pressed!")
+			row, _ := table.GetSelection()
+			if row == 0 {
+				return event
+			}
+			if row == offset-1 {
+				return event
+			}
+
+			// Get the selected file
+			i := row - offset
+			file := p.files[i]
+
+			// Create callback function that will be called when filename is entered
+			callback := func(filename string) {
+				if filename != "" {
+					// Get JSON from the file
+					json := file.Json(0)
+
+					// Save JSON to file (this happens in the context of ResultPage)
+					err := saveJsonToFile(json, filename)
+					if err != nil {
+						debug.Info(fmt.Sprintf("Error saving JSON to file %s: %s", filename, err.Error()))
+					} else {
+						debug.Info(fmt.Sprintf("Successfully saved JSON to file: %s", filename))
+					}
+				}
+			}
+
+			// Show the filename page
+			filenamePage := NewFileNamePage(p.app, callback)
+			p.navigator.Push(filenamePage)
 		}
 		return event
 	})
@@ -276,7 +363,7 @@ func NewHelpPage(app *tview.Application) *HelpPage {
 func (p *HelpPage) Show() {
 	text := fmt.Sprintf(`GNCDU %s
 
-	https://github.com/bastengao/gncdu + logging
+	https://github.com/bastengao/gncdu + logging2
 	`, Version)
 	modal := tview.NewModal().
 		SetText(text).
@@ -310,7 +397,7 @@ func (p *DeleteConfirmPage) Show() {
 		SetText(fmt.Sprintf("Are you sure want to delete \"%s\" ?", p.name)).
 		AddButtons([]string{"OK", "Cancel"}).
 		SetDoneFunc(func(i int, l string) {
-			if i == 0 {
+			if i == 0 { // "OK" is now at index 0
 				p.confirm()
 			}
 			p.navigator.Pop()
