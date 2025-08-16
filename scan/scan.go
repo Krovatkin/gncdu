@@ -55,7 +55,7 @@ func DefaultConcurrency() int {
 }
 
 func scanDir(parent *FileData, ch chan *FileData, closeWait *sync.WaitGroup) error {
-	if !parent.Root() && (parent.size != -1 || !parent.IsDir) {
+	if !parent.Root() && (parent.JsonSize != -1 || !parent.IsDir) {
 		return nil
 	}
 
@@ -86,16 +86,16 @@ func LoadFromJSON(filename string) ([]*FileData, error) {
 		return nil, err
 	}
 
-	var files []*FileData
-	err = json.Unmarshal(data, &files)
+	var root *FileData
+	err = json.Unmarshal(data, &root)
 	if err != nil {
 		return nil, err
 	}
 
 	// Set parent references for all root files and their children
-	for _, file := range files {
+	for _, file := range root.Children {
 		file.SetParents()
 	}
 
-	return files, nil
+	return root.Children, nil
 }

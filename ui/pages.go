@@ -261,17 +261,7 @@ func (p *ResultPage) Show() {
 			}
 		} else if event.Rune() == 'o' {
 			debug.Info("o was pressed!")
-			row, _ := table.GetSelection()
-			if row == 0 {
-				return event
-			}
-			if row == offset-1 {
-				return event
-			}
-
-			// Get the selected file
-			i := row - offset
-			file := p.files[i]
+			file := p.parent
 
 			// Create callback function that will be called when filename is entered
 			callback := func(filename string) {

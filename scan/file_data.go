@@ -10,31 +10,31 @@ import (
 )
 
 type FileData struct {
-	Parent   *FileData   `json:"-"` // Exclude parent (no cycles)
-	dir      string      `json:"dir"`
-	Name     string      `json:"name"`
-	size     int64       `json:"size"`
-	IsDir    bool        `json:"isDir"`
-	Children []*FileData `json:"children,omitempty"`
-	count    int         `json:"count"`
+	Parent    *FileData   `json:"-"` // Exclude parent (no cycles)
+	JsonDir   string      `json:"dir"`
+	Name      string      `json:"name"`
+	JsonSize  int64       `json:"size"`
+	IsDir     bool        `json:"isDir"`
+	Children  []*FileData `json:"children,omitempty"`
+	JsonCount int         `json:"count"`
 }
 
 func newRootFileData(dir string) *FileData {
-	return &FileData{dir: dir, size: 0, count: 0}
+	return &FileData{JsonDir: dir, JsonSize: 0, JsonCount: 0}
 }
 
-func newFileData(parant *FileData, file os.FileInfo) *FileData {
+func newFileData(parent *FileData, file os.FileInfo) *FileData {
 	var size int64 = -1
 	count := -1
 	if !file.IsDir() {
 		size = file.Size()
 		count = 0
 	}
-	return &FileData{Parent: parant, dir: parant.Path(), Name: file.Name(), size: size, IsDir: file.IsDir(), count: count}
+	return &FileData{Parent: parent, JsonDir: parent.Path(), Name: file.Name(), JsonSize: size, IsDir: file.IsDir(), JsonCount: count}
 }
 
 func (d FileData) Root() bool {
-	return d.Name == ""
+	return d.Parent == nil
 }
 
 func (d FileData) Label() string {
@@ -51,10 +51,10 @@ func (d FileData) Label() string {
 
 func (d FileData) Path() string {
 	if d.Root() {
-		return d.dir
+		return d.JsonDir
 	}
 
-	return filepath.Join(d.dir, d.Name)
+	return filepath.Join(d.JsonDir, d.Name)
 }
 
 func (d FileData) String() string {
@@ -62,20 +62,20 @@ func (d FileData) String() string {
 }
 
 func (d *FileData) Count() int {
-	if d.count != -1 {
-		return d.count
+	if d.JsonCount != -1 {
+		return d.JsonCount
 	}
 	c := len(d.Children)
 	for _, f := range d.Children {
 		c += f.Count()
 	}
-	d.count = c
+	d.JsonCount = c
 	return c
 }
 
 func (d *FileData) Size() int64 {
-	if d.size != -1 {
-		return d.size
+	if d.JsonSize != -1 {
+		return d.JsonSize
 	}
 
 	var s int64 = 0
@@ -83,14 +83,14 @@ func (d *FileData) Size() int64 {
 	for _, f := range d.Children {
 		s += f.Size()
 	}
-	d.size = s
+	d.JsonSize = s
 	return s
 }
 
 func (d *FileData) SetChildren(children []*FileData) {
 	d.Children = children
-	d.size = -1
-	d.count = -1
+	d.JsonSize = -1
+	d.JsonCount = -1
 	d.Size()
 	d.Count()
 }
@@ -133,7 +133,7 @@ func (fd *FileData) SetParents() {
 func (file *FileData) SubtractSizeFromAncestors() {
 	parent := file.Parent
 	for parent != nil {
-		file.size -= parent.size
+		file.JsonSize -= parent.JsonSize
 		parent = parent.Parent // Move up in the hierarchy
 	}
 }
@@ -163,7 +163,7 @@ func (file *FileData) updateSizesOnMove(dst string) {
 	paths := strings.Split(dst, string(os.PathSeparator))
 
 	// Update root node size first
-	root.size += file.size
+	root.JsonSize += file.JsonSize
 
 	// Iterating over elements
 	for _, path := range paths {
@@ -177,7 +177,7 @@ func (file *FileData) updateSizesOnMove(dst string) {
 
 		// If child was found then increase the size by file.Size()
 		if child != nil {
-			child.size += file.size
+			child.JsonSize += file.JsonSize
 			root = child // Make this node as new root for the next iteration
 		} else {
 			// Break upon no matching child
