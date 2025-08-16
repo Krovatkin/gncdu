@@ -132,7 +132,7 @@ func (fd *FileData) SetParents() {
 
 func (file *FileData) SubtractSizeFromAncestors() {
 	parent := file.Parent
-	for parent != nil {
+	for !parent.Root() {
 		file.JsonSize -= parent.JsonSize
 		parent = parent.Parent // Move up in the hierarchy
 	}
@@ -144,7 +144,7 @@ func (file *FileData) updateSizesOnMove(dst string) {
 
 	// Getting the root
 	root := file
-	for root.Parent != nil {
+	for !root.Root() {
 		root = root.Parent
 	}
 
