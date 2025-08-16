@@ -199,7 +199,7 @@ func (p *ResultPage) Show() {
 			}
 
 			file := p.files[row-offset]
-			if !file.Info.IsDir() {
+			if !file.IsDir {
 				return
 			}
 			page := NewResultPage(p.app, file.Children, file)
@@ -227,7 +227,7 @@ func (p *ResultPage) Show() {
 				p.files = append(p.files[:i], p.files[i+1:]...)
 				p.parent.SetChildren(p.files)
 			}
-			navigator.Push(NewDeleteConfirmPage(p.app, file.Info.Name(), confirm))
+			navigator.Push(NewDeleteConfirmPage(p.app, file.Name, confirm))
 		} else if event.Rune() == 'm' {
 
 			row, _ := table.GetSelection()
@@ -277,7 +277,7 @@ func (p *ResultPage) Show() {
 			callback := func(filename string) {
 				if filename != "" {
 					// Get JSON from the file
-					json := file.Json(0)
+					json := file.Json()
 
 					// Save JSON to file (this happens in the context of ResultPage)
 					err := saveJsonToFile(json, filename)
@@ -309,7 +309,7 @@ func (p *ResultPage) Show() {
 	var maxSize int64
 	for i, file := range p.files {
 		nameColor := tcell.ColorWhite
-		if file.Info.IsDir() {
+		if file.IsDir {
 			nameColor = tcell.ColorDeepSkyBlue
 		}
 
@@ -384,17 +384,17 @@ func (p *HelpPage) Show() {
 
 type DeleteConfirmPage struct {
 	BasePage
-	name    string
+	Name    string
 	confirm func()
 }
 
-func NewDeleteConfirmPage(app *tview.Application, name string, confirm func()) *DeleteConfirmPage {
-	return &DeleteConfirmPage{BasePage: BasePage{app: app}, name: name, confirm: confirm}
+func NewDeleteConfirmPage(app *tview.Application, Name string, confirm func()) *DeleteConfirmPage {
+	return &DeleteConfirmPage{BasePage: BasePage{app: app}, Name: Name, confirm: confirm}
 }
 
 func (p *DeleteConfirmPage) Show() {
 	modal := tview.NewModal().
-		SetText(fmt.Sprintf("Are you sure want to delete \"%s\" ?", p.name)).
+		SetText(fmt.Sprintf("Are you sure want to delete \"%s\" ?", p.Name)).
 		AddButtons([]string{"OK", "Cancel"}).
 		SetDoneFunc(func(i int, l string) {
 			if i == 0 { // "OK" is now at index 0

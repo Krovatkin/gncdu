@@ -1,9 +1,9 @@
-name: Go
+Name: Go
 on: [push]
 jobs:
 
   build:
-    name: Build
+    Name: Build
     runs-on: ubuntu-latest
     steps:
 
@@ -12,8 +12,8 @@ jobs:
       with:
         go-version: '1.20'
 
-    - name: Test
+    - Name: Test
       run: go test ./...
 
-    - name: Build
+    - Name: Build
       run: go build -v .

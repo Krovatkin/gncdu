@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"runtime"
 	"sync"
@@ -54,7 +55,7 @@ func DefaultConcurrency() int {
 }
 
 func scanDir(parent *FileData, ch chan *FileData, closeWait *sync.WaitGroup) error {
-	if !parent.Root() && (parent.size != -1 || !parent.Info.IsDir()) {
+	if !parent.Root() && (parent.size != -1 || !parent.IsDir) {
 		return nil
 	}
 
@@ -76,4 +77,25 @@ func scanDir(parent *FileData, ch chan *FileData, closeWait *sync.WaitGroup) err
 
 	parent.Children = children
 	return nil
+}
+
+// LoadFromJSON loads FileData from JSON file
+func LoadFromJSON(filename string) ([]*FileData, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var files []*FileData
+	err = json.Unmarshal(data, &files)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set parent references for all root files and their children
+	for _, file := range files {
+		file.SetParents()
+	}
+
+	return files, nil
 }

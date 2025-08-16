@@ -21,7 +21,7 @@ func Print(files []*FileData) {
 func formatter(files []*FileData) string {
 	maxLenght := 0
 	for _, f := range files {
-		l := strings.Count(f.Info.Name(), "")
+		l := strings.Count(f.Name, "")
 		if l > maxLenght {
 			maxLenght = l
 		}
