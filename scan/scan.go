@@ -94,6 +94,7 @@ func LoadFromJSON(filename string) ([]*FileData, error) {
 
 	// Set parent references for all root files and their children
 	for _, file := range root.Children {
+		file.Parent = root
 		file.SetParents()
 	}
 
