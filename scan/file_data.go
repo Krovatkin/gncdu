@@ -34,7 +34,7 @@ func newFileData(parent *FileData, file os.FileInfo) *FileData {
 }
 
 func (d FileData) Root() bool {
-	return d.Parent == nil
+	return d.Name == ""
 }
 
 func (d FileData) Label() string {
